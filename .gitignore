@@ -1,0 +1,20 @@
+# ByteForge Simulator - Fase 3
+# Creado por: Equipo G01T
+
+# Ignorar archivos generados por Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignorar entornos virtuales
+venv/
+env/
+.env
+
+# Ignorar reportes generados localmente (no subirlos al repo para no saturarlo)
+*.pdf
+*.csv
+
+# Ignorar configuraciones del IDE
+.vscode/
+.idea/
