@@ -1,0 +1,16 @@
+# Byteforge Simulator
+Simulador de circuitos en corriente directa (análisis de mallas y nodos) desarrollado en Python para el proyecto de cátedra de la Fase 3.
+
+## Equipo de Trabajo (G01T)
+* Katherine Gissell García Sánchez
+* Carlos Francisco Peña Herrera
+* José Rolando Álvarez Mejía
+* Bryan Steven Cornejo Zavala
+* Kevin Adonay Martinez Ceron
+
+## Funcionalidades Principales
+* Análisis nodal paramétrico.
+* Análisis por mallas.
+* Balance energético automático.
+* Interfaz gráfica de usuario.
+* Exportación de reportes a PDF/CSV.
