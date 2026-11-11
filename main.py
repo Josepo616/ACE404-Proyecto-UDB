@@ -169,6 +169,18 @@ def main():
 
     tk.Button(fila_k, text="+1 ▶", width=5, command=lambda: mod_k(1.0)).pack(side="left", padx=(6, 0))
 
+    # --- MENSAJE DE ESTADO Y ALERTA (PASO 4) ---
+    btn_status = tk.Button(
+        card,
+        text="Estado: Normal (Solución única)",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        wraplength=440,
+        pady=8,
+    )
+    btn_status.pack(fill="x", pady=(2, 10))
+
     # --- SECCIÓN RESULTADOS NODAL ---
     btn_res_tit = tk.Button(
         card,
@@ -248,11 +260,15 @@ def main():
         res = resolver_circuito(R3=r3_num, k=k_num)
 
         if res.get("error"):
+            btn_status.configure(text=f"⚠ ERROR: {res['error']}")
+
             box_va.configure(text="VA: -- V")
             box_vb.configure(text="VB: -- V")
             box_vc.configure(text="VC: -- V")
             box_iphi.configure(text="iϕ: -- A")
         else:
+            btn_status.configure(text="Estado: Normal (Solución única)")
+
             box_va.configure(text=f"VA: {res['VA']:.3f} V")
             box_vb.configure(text=f"VB: {res['VB']:.3f} V")
             box_vc.configure(text=f"VC: {res['VC']:.3f} V")
