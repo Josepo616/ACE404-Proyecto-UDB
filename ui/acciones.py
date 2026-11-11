@@ -6,7 +6,8 @@ Proporciona botones de comando para:
 1. Restablecer valores nominales de diseño.
 2. Comprobación rápida de condición de singularidad (k ≈ -10.18 Ω).
 3. Copia limpia del reporte matemático de 8 pasos al portapapeles del sistema.
-4. Apertura del reporte en el visor nativo del sistema operativo (TextEdit en macOS, Bloc de notas en Windows).
+4. Apertura del reporte en el visor nativo (TextEdit en macOS / Bloc de notas en Windows).
+5. Visualización del diagrama esquemático en Vista Previa / Visor de Fotos.
 """
 
 import sys
@@ -16,7 +17,8 @@ import tkinter as tk
 class PanelAcciones(tk.Frame):
     """
     Panel inferior con botones de acción para restablecer el circuito,
-    inducir la singularidad de prueba, copiar el reporte y abrir el visor nativo.
+    inducir la singularidad de prueba, copiar el reporte, abrir el visor nativo
+    y visualizar el diagrama esquemático.
     """
 
     def __init__(
@@ -26,6 +28,7 @@ class PanelAcciones(tk.Frame):
         on_singularidad=None,
         on_copiar=None,
         on_abrir_visor=None,
+        on_ver_diagrama=None,
         **kwargs,
     ):
         super().__init__(parent, **kwargs)
@@ -33,6 +36,7 @@ class PanelAcciones(tk.Frame):
         self.on_singularidad = on_singularidad
         self.on_copiar = on_copiar
         self.on_abrir_visor = on_abrir_visor
+        self.on_ver_diagrama = on_ver_diagrama
 
         self._construir_widgets()
 
@@ -61,7 +65,7 @@ class PanelAcciones(tk.Frame):
 
         # --- FILA 2: PROCEDIMIENTO MATEMÁTICO COMPLETO ---
         fila2 = tk.Frame(self)
-        fila2.pack(fill="x")
+        fila2.pack(fill="x", pady=(0, 6))
 
         self.btn_copiar = tk.Button(
             fila2,
@@ -87,6 +91,23 @@ class PanelAcciones(tk.Frame):
             pady=7,
         )
         self.btn_abrir.pack(side="left", fill="x", expand=True, padx=(4, 0))
+
+        # --- FILA 3: DIAGRAMA ESQUEMÁTICO DEL CIRCUITO ---
+        texto_btn_diagrama = (
+            "🖼️ Ver Diagrama en Vista Previa"
+            if sys.platform == "darwin"
+            else "🖼️ Ver Diagrama en Visor de Fotos"
+            if sys.platform == "win32"
+            else "🖼️ Ver Diagrama del Circuito"
+        )
+        self.btn_diagrama = tk.Button(
+            self,
+            text=texto_btn_diagrama,
+            font=("Helvetica", 10, "bold"),
+            command=self.on_ver_diagrama,
+            pady=7,
+        )
+        self.btn_diagrama.pack(fill="x")
 
     def _ejecutar_copia(self):
         if self.on_copiar:

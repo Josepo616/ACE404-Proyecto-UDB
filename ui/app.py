@@ -18,6 +18,7 @@ from modelo import paso_a_paso, resolver_circuito
 from ui.controles import PanelControles
 from ui.metricas import PanelMetricas
 from ui.acciones import PanelAcciones
+from ui.esquema import abrir_diagrama_en_visor
 
 NOMINAL_R3 = 5.0
 NOMINAL_K = 8.0
@@ -43,8 +44,8 @@ class SimuladorApp:
             self._root_creada = False
 
         self.root.title("Simulador DC - Circuito con Fuente Dependiente (Fase 3)")
-        self.root.geometry("580x720")
-        self.root.minsize(520, 660)
+        self.root.geometry("580x740")
+        self.root.minsize(520, 680)
 
         self._construir_ui()
         self.actualizar_resumen()
@@ -70,13 +71,14 @@ class SimuladorApp:
         self.panel_metricas = PanelMetricas(self.card)
         self.panel_metricas.pack(fill="x")
 
-        # 3. Panel de acciones (Restablecer, Singularidad, Reporte)
+        # 3. Panel de acciones (Restablecer, Singularidad, Reporte, Diagrama)
         self.panel_acciones = PanelAcciones(
             self.card,
             on_restablecer=self.restablecer,
             on_singularidad=self.probar_singularidad,
             on_copiar=self.copiar_procedimiento,
             on_abrir_visor=self.abrir_en_visor,
+            on_ver_diagrama=self.ver_diagrama,
         )
         self.panel_acciones.pack(fill="x")
 
@@ -113,6 +115,24 @@ class SimuladorApp:
             subprocess.Popen(["open", ruta])
         else:
             subprocess.Popen(["xdg-open", ruta])
+
+    def ver_diagrama(self):
+        """Genera el esquema gráfico del circuito con los valores actuales y lo abre en Vista Previa / Fotos."""
+        r3_raw, k_raw = self.panel_controles.obtener_valores()
+        r3_num = round(r3_raw, 1)
+        k_num = self.K_SINGULAR if abs(k_raw - self.K_SINGULAR) < 0.02 else round(k_raw, 1)
+        res = resolver_circuito(R3=r3_num, k=k_num)
+        es_error = bool(res.get("error"))
+
+        abrir_diagrama_en_visor(
+            r3=r3_num,
+            k=k_num,
+            va=res.get("VA", 0.0),
+            vb=res.get("VB", 0.0),
+            vc=res.get("VC", 0.0),
+            iphi=res.get("iphi", 0.0),
+            error=es_error,
+        )
 
     def actualizar_resumen(self):
         """Calcula el circuito con modelo.py y actualiza todos los componentes de la interfaz."""
