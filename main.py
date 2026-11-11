@@ -1,8 +1,9 @@
 """
 main.py - Punto de entrada principal para el Simulador DC (Fase 3).
+Autor: José Rolando Álvarez Mejía (Equipo G01T - ACE941 / ACE404)
 """
 
-from interfaz import SimuladorApp
+from ui import SimuladorApp
 
 
 def main():
