@@ -83,6 +83,14 @@ class TestInterfazSimulador(unittest.TestCase):
         self.assertIn("PASO 8", contenido_clipboard)
         self.assertIn("Balance de potencia", contenido_clipboard)
 
+    def test_06_generacion_diagrama_esquematico(self):
+        """Verifica que el generador de esquema produzca la imagen del circuito correctamente."""
+        from ui.esquema import generar_diagrama_circuito
+        import os
+        ruta = generar_diagrama_circuito(r3=5.0, k=8.0, va=16.0, vb=10.0, vc=9.6, iphi=1.2)
+        self.assertTrue(os.path.exists(ruta), f"No se encontró el archivo generado en {ruta}")
+        self.assertGreater(os.path.getsize(ruta), 1000, "El archivo de imagen generado está vacío")
+
 
 if __name__ == "__main__":
     unittest.main()
