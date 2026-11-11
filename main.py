@@ -2,11 +2,12 @@
 main.py - Punto de entrada principal para el Simulador DC (Fase 3).
 """
 
-from interfaz import crear_interfaz
+from interfaz import SimuladorApp
 
 
 def main():
-    crear_interfaz()
+    app = SimuladorApp()
+    app.ejecutar()
 
 
 if __name__ == "__main__":
