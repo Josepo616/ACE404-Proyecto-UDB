@@ -7,6 +7,8 @@ import os
 os.environ["TK_SILENCE_DEPRECATION"] = "1"
 
 import subprocess
+import sys
+import tempfile
 import tkinter as tk
 
 from modelo import paso_a_paso, resolver_circuito
@@ -448,14 +450,26 @@ def main():
         k_val = slider_k.get()
         k_calc = K_SINGULAR if abs(k_val - K_SINGULAR) < 0.02 else round(k_val, 1)
         texto = paso_a_paso(R3=round(slider_r3.get(), 1), k=k_calc)
-        ruta = "/tmp/procedimiento_circuito.txt"
+        ruta = os.path.join(tempfile.gettempdir(), "procedimiento_circuito.txt")
         with open(ruta, "w", encoding="utf-8") as f:
             f.write(texto)
-        subprocess.Popen(["open", ruta])
+        if sys.platform == "win32":
+            os.startfile(ruta)
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", ruta])
+        else:
+            subprocess.Popen(["xdg-open", ruta])
 
+    texto_btn_abrir = (
+        "📄 Ver en Bloc de notas"
+        if sys.platform == "win32"
+        else "📄 Ver en TextEdit"
+        if sys.platform == "darwin"
+        else "📄 Ver Procedimiento"
+    )
     btn_abrir = tk.Button(
         fila_acciones2,
-        text="📄 Ver en TextEdit",
+        text=texto_btn_abrir,
         font=("Helvetica", 10, "bold"),
         command=abrir_en_visor,
         pady=7,
