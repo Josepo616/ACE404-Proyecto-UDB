@@ -422,6 +422,46 @@ def main():
     )
     btn_sing.pack(side="left", fill="x", expand=True, padx=(4, 0))
 
+    # --- ACCIONES FILA 2: PROCEDIMIENTO MATEMÁTICO COMPLETO ---
+    fila_acciones2 = tk.Frame(card)
+    fila_acciones2.pack(fill="x")
+
+    def copiar_procedimiento():
+        k_val = slider_k.get()
+        k_calc = K_SINGULAR if abs(k_val - K_SINGULAR) < 0.02 else round(k_val, 1)
+        texto = paso_a_paso(R3=round(slider_r3.get(), 1), k=k_calc)
+        root.clipboard_clear()
+        root.clipboard_append(texto)
+        btn_copiar.configure(text="✓ ¡Procedimiento Copiado!")
+        root.after(1800, lambda: btn_copiar.configure(text="📋 Copiar Procedimiento (8 Pasos)"))
+
+    btn_copiar = tk.Button(
+        fila_acciones2,
+        text="📋 Copiar Procedimiento (8 Pasos)",
+        font=("Helvetica", 10, "bold"),
+        command=copiar_procedimiento,
+        pady=7,
+    )
+    btn_copiar.pack(side="left", fill="x", expand=True, padx=(0, 4))
+
+    def abrir_en_visor():
+        k_val = slider_k.get()
+        k_calc = K_SINGULAR if abs(k_val - K_SINGULAR) < 0.02 else round(k_val, 1)
+        texto = paso_a_paso(R3=round(slider_r3.get(), 1), k=k_calc)
+        ruta = "/tmp/procedimiento_circuito.txt"
+        with open(ruta, "w", encoding="utf-8") as f:
+            f.write(texto)
+        subprocess.Popen(["open", ruta])
+
+    btn_abrir = tk.Button(
+        fila_acciones2,
+        text="📄 Ver en TextEdit",
+        font=("Helvetica", 10, "bold"),
+        command=abrir_en_visor,
+        pady=7,
+    )
+    btn_abrir.pack(side="left", fill="x", expand=True, padx=(4, 0))
+
     # Inicializar estado
     actualizar_resumen()
 
