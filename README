@@ -4,7 +4,7 @@ Simulador de circuitos en corriente directa (análisis nodal y de mallas) desarr
 
 ## Equipo de Trabajo (G01T)
 * **Katherine Gissell García Sánchez:** Núcleo de cálculo y validaciones matemáticas (`modelo.py`).
-* **José Rolando Álvarez Mejía:** Diseño UI/UX y desarrollo Frontend (`interfaz.py`, `main.py`).
+* **José Rolando Álvarez Mejía:** Arquitectura y desarrollo Frontend UI/UX (paquete modular `ui/`, `main.py`, `test_interfaz.py`).
 * **Bryan Steven Cornejo Zavala:** Visualización de datos y gráficos (`matplotlib`).
 * **Carlos Francisco Peña Herrera:** Módulos de exportación (CSV/PDF) y comparativas secundarias.
 * **Kevin Adonay Martinez Ceron:** Integración del sistema, testing y aseguramiento de calidad.
@@ -21,24 +21,40 @@ Simulador de circuitos en corriente directa (análisis nodal y de mallas) desarr
 
 ## Instalación y Ejecución
 
-1. **Activar el entorno virtual:**
-```bash
-source venv/bin/activate
-```
+1. **Crear y activar el entorno virtual:**
+
+   * **macOS / Linux:**
+     ```bash
+     python3 -m venv venv
+     source venv/bin/activate
+     ```
+   * **Windows** (CMD / PowerShell):
+     ```cmd
+     python -m venv venv
+     venv\Scripts\activate
+     ```
 
 2. **Instalar dependencias:**
-```bash
-pip install -r requirements.txt
-```
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 3. **Ejecutar el simulador:**
-```bash
-python main.py
-```
+   ```bash
+   python main.py
+   ```
 
 4. **Ejecutar la suite de pruebas:**
-```bash
-python test_modelo.py
-python test_interfaz.py
-```
+   ```bash
+   python test_modelo.py     # Pruebas del núcleo matemático (8 pruebas)
+   python test_interfaz.py   # Pruebas de integración UI/UX (5 pruebas)
+   ```
+
+## Arquitectura del Frontend (`ui/`)
+La interfaz de usuario sigue una arquitectura orientada a objetos modular:
+* **`ui/app.py`:** Orquestador principal (`SimuladorApp`) que inicializa la ventana y coordina el ciclo de cálculo reactivo.
+* **`ui/controles.py`:** Panel What-If con sliders continuos y botones de ajuste fino (◀ -1, +1 ▶) para $R_3$ y $k$.
+* **`ui/metricas.py`:** Tarjetas de datos en tiempo real para voltajes nodales ($V_A, V_B, V_C$), corriente de control ($i_\phi$), verificación por mallas y balance de potencias.
+* **`ui/acciones.py`:** Comandos rápidos para restablecer valores nominales, probar la singularidad del sistema y exportar el procedimiento al portapapeles o visor nativo.
+* **`ui/widgets.py`:** Control deslizante de alta visibilidad (`VisibleSlider`) implementado sobre `Canvas` para garantizar legibilidad en modo oscuro/claro en macOS y Windows.
 
