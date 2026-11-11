@@ -1,0 +1,5 @@
+# Dependencias del Simulador de Circuitos DC (Fase 3 - Equipo G01T)
+numpy>=1.20.0
+customtkinter>=6.0.0
+matplotlib>=3.5.0
+pillow>=9.0.0
