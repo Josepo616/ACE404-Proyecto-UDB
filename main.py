@@ -1,5 +1,5 @@
 """
-main.py - Paso 3: Conexión con resolver_circuito() y despliegue de resultados (VA, VB, VC, iphi).
+main.py - Paso 4: Manejo de singularidad y banner de alertas r["error"].
 """
 
 import os
@@ -11,6 +11,7 @@ from modelo import resolver_circuito
 
 NOMINAL_R3 = 5.0
 NOMINAL_K = 8.0
+K_SINGULAR = -56.0 / 5.5  # ≈ -10.1818 Ω
 
 
 class VisibleSlider(tk.Canvas):
@@ -84,9 +85,9 @@ class VisibleSlider(tk.Canvas):
 
 def main():
     root = tk.Tk()
-    root.title("Simulador DC - Paso 3: Resultados Nodal en Tiempo Real")
-    root.geometry("560x520")
-    root.minsize(480, 460)
+    root.title("Simulador DC - Paso 4: Detección y Manejo de Singularidad")
+    root.geometry("560x570")
+    root.minsize(480, 500)
 
     # Contenedor centrado responsivo
     card = tk.Frame(root, padx=24, pady=20)
@@ -102,7 +103,7 @@ def main():
         relief="groove",
         pady=8,
     )
-    btn_info.pack(fill="x", pady=(0, 14))
+    btn_info.pack(fill="x", pady=(0, 12))
 
     # --- CONTROL R3 ---
     btn_r3_lbl = tk.Button(
@@ -117,7 +118,7 @@ def main():
     btn_r3_lbl.pack(fill="x")
 
     fila_r3 = tk.Frame(card)
-    fila_r3.pack(fill="x", pady=(2, 12))
+    fila_r3.pack(fill="x", pady=(2, 10))
 
     def mod_r3(delta):
         slider_r3.set(slider_r3.get() + delta)
@@ -149,7 +150,7 @@ def main():
     btn_k_lbl.pack(fill="x")
 
     fila_k = tk.Frame(card)
-    fila_k.pack(fill="x", pady=(2, 16))
+    fila_k.pack(fill="x", pady=(2, 12))
 
     def mod_k(delta):
         slider_k.set(slider_k.get() + delta)
@@ -168,7 +169,7 @@ def main():
 
     tk.Button(fila_k, text="+1 ▶", width=5, command=lambda: mod_k(1.0)).pack(side="left", padx=(6, 0))
 
-    # --- SECCIÓN RESULTADOS NODAL (PASO 3) ---
+    # --- SECCIÓN RESULTADOS NODAL ---
     btn_res_tit = tk.Button(
         card,
         text="📊 Resultados Nodal (resolver_circuito)",
@@ -180,9 +181,8 @@ def main():
     )
     btn_res_tit.pack(fill="x", pady=(2, 4))
 
-    # Fila de tarjetas de medición
     fila_med = tk.Frame(card)
-    fila_med.pack(fill="x", pady=(0, 16))
+    fila_med.pack(fill="x", pady=(0, 14))
 
     box_va = tk.Button(
         fila_med,
@@ -228,43 +228,68 @@ def main():
     )
     box_iphi.pack(side="left", fill="x", expand=True, padx=2)
 
-    # Función que conecta los sliders con el modelo matemático
+    # Función que conecta los sliders con el modelo matemático y maneja errores
     def actualizar_resumen():
         r3_num = round(slider_r3.get(), 1)
-        k_num = round(slider_k.get(), 1)
-        btn_r3_lbl.configure(text=f"Resistencia R3: {r3_num:.1f} Ω")
-        btn_k_lbl.configure(text=f"Ganancia dependiente k: {k_num:.1f} Ω")
-        btn_info.configure(text=f"Entradas: R3 = {r3_num:.1f} Ω  |  k = {k_num:.1f} Ω")
+        k_val = slider_k.get()
 
-        # Conexión con modelo.py (Katherine)
-        res = resolver_circuito(R3=r3_num, k=k_num)
-        if not res.get("error"):
-            box_va.configure(text=f"VA: {res['VA']:.3f} V")
-            box_vb.configure(text=f"VB: {res['VB']:.3f} V")
-            box_vc.configure(text=f"VC: {res['VC']:.3f} V")
-            box_iphi.configure(text=f"iϕ: {res['iphi']:.4f} A")
+        if abs(k_val - K_SINGULAR) < 0.02:
+            k_num = K_SINGULAR
+            k_str = "-10.18"
         else:
+            k_num = round(k_val, 1)
+            k_str = f"{k_num:.1f}"
+
+        btn_r3_lbl.configure(text=f"Resistencia R3: {r3_num:.1f} Ω")
+        btn_k_lbl.configure(text=f"Ganancia dependiente k: {k_str} Ω")
+        btn_info.configure(text=f"Entradas: R3 = {r3_num:.1f} Ω  |  k = {k_str} Ω")
+
+        # Conexión con modelo.py
+        res = resolver_circuito(R3=r3_num, k=k_num)
+
+        if res.get("error"):
             box_va.configure(text="VA: -- V")
             box_vb.configure(text="VB: -- V")
             box_vc.configure(text="VC: -- V")
             box_iphi.configure(text="iϕ: -- A")
+        else:
+            box_va.configure(text=f"VA: {res['VA']:.3f} V")
+            box_vb.configure(text=f"VB: {res['VB']:.3f} V")
+            box_vc.configure(text=f"VC: {res['VC']:.3f} V")
+            box_iphi.configure(text=f"iϕ: {res['iphi']:.4f} A")
 
-    # --- BOTÓN RESTABLECER ---
+    # --- BOTONES DE ACCIÓN ---
+    fila_acciones = tk.Frame(card)
+    fila_acciones.pack(fill="x")
+
     def restablecer():
         slider_r3.set(NOMINAL_R3)
         slider_k.set(NOMINAL_K)
         actualizar_resumen()
 
     btn_reset = tk.Button(
-        card,
-        text="↺ Restablecer Nominales (R3 = 5.0 Ω, k = 8.0 Ω)",
+        fila_acciones,
+        text="↺ Restablecer Nominales",
         font=("Helvetica", 11, "bold"),
         command=restablecer,
         pady=8,
     )
-    btn_reset.pack(fill="x")
+    btn_reset.pack(side="left", fill="x", expand=True, padx=(0, 4))
 
-    # Inicializar con valores nominales
+    def probar_singularidad():
+        slider_k.set(K_SINGULAR)
+        actualizar_resumen()
+
+    btn_sing = tk.Button(
+        fila_acciones,
+        text="⚠ Probar Singularidad (k ≈ -10.18)",
+        font=("Helvetica", 11, "bold"),
+        command=probar_singularidad,
+        pady=8,
+    )
+    btn_sing.pack(side="left", fill="x", expand=True, padx=(4, 0))
+
+    # Inicializar estado
     actualizar_resumen()
 
     root.update_idletasks()
