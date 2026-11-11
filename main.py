@@ -85,9 +85,9 @@ class VisibleSlider(tk.Canvas):
 
 def main():
     root = tk.Tk()
-    root.title("Simulador DC - Paso 4: Detección y Manejo de Singularidad")
-    root.geometry("560x570")
-    root.minsize(480, 500)
+    root.title("Simulador DC - Paso 5: Balance Energético y Procedimiento")
+    root.geometry("560x640")
+    root.minsize(480, 580)
 
     # Contenedor centrado responsivo
     card = tk.Frame(root, padx=24, pady=20)
@@ -240,6 +240,50 @@ def main():
     )
     box_iphi.pack(side="left", fill="x", expand=True, padx=2)
 
+    # --- SECCIÓN BALANCE ENERGÉTICO (PASO 5) ---
+    btn_bal_tit = tk.Button(
+        card,
+        text="⚡ Balance de Potencia (P_gen vs P_abs)",
+        font=("Helvetica", 11, "bold"),
+        state="disabled",
+        relief="flat",
+        anchor="w",
+    )
+    btn_bal_tit.pack(fill="x", pady=(2, 4))
+
+    fila_bal = tk.Frame(card)
+    fila_bal.pack(fill="x", pady=(0, 14))
+
+    box_pgen = tk.Button(
+        fila_bal,
+        text="P_gen: -- W",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        pady=8,
+    )
+    box_pgen.pack(side="left", fill="x", expand=True, padx=2)
+
+    box_pabs = tk.Button(
+        fila_bal,
+        text="P_abs: -- W",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        pady=8,
+    )
+    box_pabs.pack(side="left", fill="x", expand=True, padx=2)
+
+    box_bal_ok = tk.Button(
+        fila_bal,
+        text="Balance: --",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        pady=8,
+    )
+    box_bal_ok.pack(side="left", fill="x", expand=True, padx=2)
+
     # Función que conecta los sliders con el modelo matemático y maneja errores
     def actualizar_resumen():
         r3_num = round(slider_r3.get(), 1)
@@ -266,6 +310,10 @@ def main():
             box_vb.configure(text="VB: -- V")
             box_vc.configure(text="VC: -- V")
             box_iphi.configure(text="iϕ: -- A")
+
+            box_pgen.configure(text="P_gen: -- W")
+            box_pabs.configure(text="P_abs: -- W")
+            box_bal_ok.configure(text="Balance: --")
         else:
             btn_status.configure(text="Estado: Normal (Solución única)")
 
@@ -273,6 +321,11 @@ def main():
             box_vb.configure(text=f"VB: {res['VB']:.3f} V")
             box_vc.configure(text=f"VC: {res['VC']:.3f} V")
             box_iphi.configure(text=f"iϕ: {res['iphi']:.4f} A")
+
+            box_pgen.configure(text=f"P_gen: {res['P_generada']:.3f} W")
+            box_pabs.configure(text=f"P_abs: {res['P_absorbida']:.3f} W")
+            bal_str = "✓ Se conserva" if res.get("balance_ok") else "✗ Desbalance"
+            box_bal_ok.configure(text=f"Balance: {bal_str}")
 
     # --- BOTONES DE ACCIÓN ---
     fila_acciones = tk.Frame(card)
