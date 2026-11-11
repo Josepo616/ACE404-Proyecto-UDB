@@ -1,13 +1,15 @@
 """
-main.py - Paso 4: Manejo de singularidad y banner de alertas r["error"].
+main.py - Fase 3: Simulador DC Interactivo de Circuitos con Fuente Dependiente.
+Análisis Nodal, Verificación por Mallas, Balance Energético y Procedimiento Paso a Paso.
 """
 
 import os
 os.environ["TK_SILENCE_DEPRECATION"] = "1"
 
+import subprocess
 import tkinter as tk
 
-from modelo import resolver_circuito
+from modelo import paso_a_paso, resolver_circuito
 
 NOMINAL_R3 = 5.0
 NOMINAL_K = 8.0
@@ -17,7 +19,7 @@ K_SINGULAR = -56.0 / 5.5  # ≈ -10.1818 Ω
 class VisibleSlider(tk.Canvas):
     """
     Control deslizante de alta visibilidad dibujado directamente en Canvas.
-    Garantiza que la barra y la perilla sean siempre visibles en macOS (Dark/Light) y Windows.
+    Garantiza que la barra y la perilla sean siempre visibles en macOS y Windows.
     """
 
     def __init__(self, parent, from_, to, value, command=None, **kwargs):
@@ -85,13 +87,13 @@ class VisibleSlider(tk.Canvas):
 
 def main():
     root = tk.Tk()
-    root.title("Simulador DC - Paso 5: Balance Energético y Procedimiento")
-    root.geometry("560x640")
-    root.minsize(480, 580)
+    root.title("Simulador DC - Circuito con Fuente Dependiente (Fase 3)")
+    root.geometry("580x720")
+    root.minsize(520, 660)
 
     # Contenedor centrado responsivo
-    card = tk.Frame(root, padx=24, pady=20)
-    card.place(relx=0.5, rely=0.5, anchor="center", width=500)
+    card = tk.Frame(root, padx=22, pady=16)
+    card.place(relx=0.5, rely=0.5, anchor="center", width=530)
 
     # 1. Indicador general superior de entradas
     btn_info = tk.Button(
@@ -103,7 +105,7 @@ def main():
         relief="groove",
         pady=8,
     )
-    btn_info.pack(fill="x", pady=(0, 12))
+    btn_info.pack(fill="x", pady=(0, 10))
 
     # --- CONTROL R3 ---
     btn_r3_lbl = tk.Button(
@@ -118,7 +120,7 @@ def main():
     btn_r3_lbl.pack(fill="x")
 
     fila_r3 = tk.Frame(card)
-    fila_r3.pack(fill="x", pady=(2, 10))
+    fila_r3.pack(fill="x", pady=(2, 8))
 
     def mod_r3(delta):
         slider_r3.set(slider_r3.get() + delta)
@@ -150,7 +152,7 @@ def main():
     btn_k_lbl.pack(fill="x")
 
     fila_k = tk.Frame(card)
-    fila_k.pack(fill="x", pady=(2, 12))
+    fila_k.pack(fill="x", pady=(2, 10))
 
     def mod_k(delta):
         slider_k.set(slider_k.get() + delta)
@@ -169,17 +171,17 @@ def main():
 
     tk.Button(fila_k, text="+1 ▶", width=5, command=lambda: mod_k(1.0)).pack(side="left", padx=(6, 0))
 
-    # --- MENSAJE DE ESTADO Y ALERTA (PASO 4) ---
+    # --- ESTADO Y ALERTA DE SINGULARIDAD ---
     btn_status = tk.Button(
         card,
         text="Estado: Normal (Solución única)",
         font=("Helvetica", 10, "bold"),
         state="disabled",
         relief="groove",
-        wraplength=440,
-        pady=8,
+        wraplength=450,
+        pady=6,
     )
-    btn_status.pack(fill="x", pady=(2, 10))
+    btn_status.pack(fill="x", pady=(2, 8))
 
     # --- SECCIÓN RESULTADOS NODAL ---
     btn_res_tit = tk.Button(
@@ -187,23 +189,21 @@ def main():
         text="📊 Resultados Nodal (resolver_circuito)",
         font=("Helvetica", 11, "bold"),
         state="disabled",
-        disabledforeground="#A0A0A0",
         relief="flat",
         anchor="w",
     )
-    btn_res_tit.pack(fill="x", pady=(2, 4))
+    btn_res_tit.pack(fill="x", pady=(2, 2))
 
     fila_med = tk.Frame(card)
-    fila_med.pack(fill="x", pady=(0, 14))
+    fila_med.pack(fill="x", pady=(0, 8))
 
     box_va = tk.Button(
         fila_med,
         text="VA: -- V",
         font=("Helvetica", 10, "bold"),
         state="disabled",
-        disabledforeground="#38BDF8",
         relief="groove",
-        pady=8,
+        pady=6,
     )
     box_va.pack(side="left", fill="x", expand=True, padx=2)
 
@@ -212,9 +212,8 @@ def main():
         text="VB: -- V",
         font=("Helvetica", 10, "bold"),
         state="disabled",
-        disabledforeground="#38BDF8",
         relief="groove",
-        pady=8,
+        pady=6,
     )
     box_vb.pack(side="left", fill="x", expand=True, padx=2)
 
@@ -223,9 +222,8 @@ def main():
         text="VC: -- V",
         font=("Helvetica", 10, "bold"),
         state="disabled",
-        disabledforeground="#C084FC",
         relief="groove",
-        pady=8,
+        pady=6,
     )
     box_vc.pack(side="left", fill="x", expand=True, padx=2)
 
@@ -234,13 +232,66 @@ def main():
         text="iϕ: -- A",
         font=("Helvetica", 10, "bold"),
         state="disabled",
-        disabledforeground="#4ADE80",
         relief="groove",
-        pady=8,
+        pady=6,
     )
     box_iphi.pack(side="left", fill="x", expand=True, padx=2)
 
-    # --- SECCIÓN BALANCE ENERGÉTICO (PASO 5) ---
+    # --- SECCIÓN VERIFICACIÓN POR MALLAS ---
+    btn_mallas_tit = tk.Button(
+        card,
+        text="🔄 Verificación por Mallas (i1, i2=iϕ, i3)",
+        font=("Helvetica", 11, "bold"),
+        state="disabled",
+        relief="flat",
+        anchor="w",
+    )
+    btn_mallas_tit.pack(fill="x", pady=(2, 2))
+
+    fila_mallas = tk.Frame(card)
+    fila_mallas.pack(fill="x", pady=(0, 8))
+
+    box_m1 = tk.Button(
+        fila_mallas,
+        text="i1: -- A",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        pady=6,
+    )
+    box_m1.pack(side="left", fill="x", expand=True, padx=2)
+
+    box_m2 = tk.Button(
+        fila_mallas,
+        text="i2: -- A",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        pady=6,
+    )
+    box_m2.pack(side="left", fill="x", expand=True, padx=2)
+
+    box_m3 = tk.Button(
+        fila_mallas,
+        text="i3: -- A",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        pady=6,
+    )
+    box_m3.pack(side="left", fill="x", expand=True, padx=2)
+
+    box_coincide = tk.Button(
+        fila_mallas,
+        text="Mallas: --",
+        font=("Helvetica", 10, "bold"),
+        state="disabled",
+        relief="groove",
+        pady=6,
+    )
+    box_coincide.pack(side="left", fill="x", expand=True, padx=2)
+
+    # --- SECCIÓN BALANCE ENERGÉTICO ---
     btn_bal_tit = tk.Button(
         card,
         text="⚡ Balance de Potencia (P_gen vs P_abs)",
@@ -249,10 +300,10 @@ def main():
         relief="flat",
         anchor="w",
     )
-    btn_bal_tit.pack(fill="x", pady=(2, 4))
+    btn_bal_tit.pack(fill="x", pady=(2, 2))
 
     fila_bal = tk.Frame(card)
-    fila_bal.pack(fill="x", pady=(0, 14))
+    fila_bal.pack(fill="x", pady=(0, 10))
 
     box_pgen = tk.Button(
         fila_bal,
@@ -260,7 +311,7 @@ def main():
         font=("Helvetica", 10, "bold"),
         state="disabled",
         relief="groove",
-        pady=8,
+        pady=6,
     )
     box_pgen.pack(side="left", fill="x", expand=True, padx=2)
 
@@ -270,7 +321,7 @@ def main():
         font=("Helvetica", 10, "bold"),
         state="disabled",
         relief="groove",
-        pady=8,
+        pady=6,
     )
     box_pabs.pack(side="left", fill="x", expand=True, padx=2)
 
@@ -280,7 +331,7 @@ def main():
         font=("Helvetica", 10, "bold"),
         state="disabled",
         relief="groove",
-        pady=8,
+        pady=6,
     )
     box_bal_ok.pack(side="left", fill="x", expand=True, padx=2)
 
@@ -311,25 +362,38 @@ def main():
             box_vc.configure(text="VC: -- V")
             box_iphi.configure(text="iϕ: -- A")
 
+            box_m1.configure(text="i1: -- A")
+            box_m2.configure(text="i2: -- A")
+            box_m3.configure(text="i3: -- A")
+            box_coincide.configure(text="Mallas: --")
+
             box_pgen.configure(text="P_gen: -- W")
             box_pabs.configure(text="P_abs: -- W")
             box_bal_ok.configure(text="Balance: --")
         else:
-            btn_status.configure(text="Estado: Normal (Solución única)")
+            det = res.get("det_G", 0.0)
+            btn_status.configure(text=f"Estado: Normal | Solución única (det = {det:.3f})")
 
             box_va.configure(text=f"VA: {res['VA']:.3f} V")
             box_vb.configure(text=f"VB: {res['VB']:.3f} V")
             box_vc.configure(text=f"VC: {res['VC']:.3f} V")
             box_iphi.configure(text=f"iϕ: {res['iphi']:.4f} A")
 
+            m = res.get("mallas", [0.0, 0.0, 0.0])
+            box_m1.configure(text=f"i1: {m[0]:.3f} A")
+            box_m2.configure(text=f"i2: {m[1]:.3f} A")
+            box_m3.configure(text=f"i3: {m[2]:.3f} A")
+            coinc_str = "✓ Coincide" if res.get("coincide_nodal_mallas") else "✗ Diferencia"
+            box_coincide.configure(text=f"Mallas: {coinc_str}")
+
             box_pgen.configure(text=f"P_gen: {res['P_generada']:.3f} W")
             box_pabs.configure(text=f"P_abs: {res['P_absorbida']:.3f} W")
             bal_str = "✓ Se conserva" if res.get("balance_ok") else "✗ Desbalance"
             box_bal_ok.configure(text=f"Balance: {bal_str}")
 
-    # --- BOTONES DE ACCIÓN ---
-    fila_acciones = tk.Frame(card)
-    fila_acciones.pack(fill="x")
+    # --- ACCIONES FILA 1: RESTABLECER Y SINGULARIDAD ---
+    fila_acciones1 = tk.Frame(card)
+    fila_acciones1.pack(fill="x", pady=(0, 6))
 
     def restablecer():
         slider_r3.set(NOMINAL_R3)
@@ -337,7 +401,7 @@ def main():
         actualizar_resumen()
 
     btn_reset = tk.Button(
-        fila_acciones,
+        fila_acciones1,
         text="↺ Restablecer Nominales",
         font=("Helvetica", 11, "bold"),
         command=restablecer,
@@ -350,7 +414,7 @@ def main():
         actualizar_resumen()
 
     btn_sing = tk.Button(
-        fila_acciones,
+        fila_acciones1,
         text="⚠ Probar Singularidad (k ≈ -10.18)",
         font=("Helvetica", 11, "bold"),
         command=probar_singularidad,
