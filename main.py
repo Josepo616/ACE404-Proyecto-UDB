@@ -30,27 +30,36 @@ class VisibleSlider(tk.Canvas):
         self.bind("<Button-1>", self._on_interaction)
         self.bind("<B1-Motion>", self._on_interaction)
 
-    def _val_to_x(self, val):
-        w = self.winfo_width()
+    def _val_to_x(self, val, w=None):
+        if w is None:
+            w = self.winfo_width()
+        if w < 50:
+            w = 240
         margin = 16
         fraction = (val - self.from_) / (self.to - self.from_)
         return margin + fraction * max(1, w - 2 * margin)
 
-    def _x_to_val(self, x):
-        w = self.winfo_width()
+    def _x_to_val(self, x, w=None):
+        if w is None:
+            w = self.winfo_width()
+        if w < 50:
+            w = 240
         margin = 16
         fraction = max(0.0, min(1.0, (x - margin) / max(1, w - 2 * margin)))
         return round(self.from_ + fraction * (self.to - self.from_), 1)
 
     def _draw(self, event=None):
         self.delete("all")
-        w = self.winfo_width()
+        if event is not None and hasattr(event, "width") and event.width > 50:
+            w = event.width
+        else:
+            w = self.winfo_width()
         if w < 50:
-            return
+            w = 240
 
         cy = 18
         margin = 16
-        kx = self._val_to_x(self.val)
+        kx = self._val_to_x(self.val, w)
 
         # Fondo del riel (gris neutro oscuro)
         self.create_line(margin, cy, w - margin, cy, fill="#3A3A3C", width=6, capstyle="round")
@@ -69,7 +78,7 @@ class VisibleSlider(tk.Canvas):
         return self.val
 
     def set(self, val):
-        self.val = max(self.from_, min(self.to, round(float(val), 1)))
+        self.val = max(self.from_, min(self.to, float(val)))
         self._draw()
 
 
