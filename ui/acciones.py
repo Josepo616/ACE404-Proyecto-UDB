@@ -1,6 +1,6 @@
 """
 ui/acciones.py - Panel de acciones y exportación multiplataforma (Fase 3).
-Autor: José Rolando Álvarez Mejía (Equipo G01T - ACE941 / ACE404)
+Autores: José Rolando Álvarez Mejía y Bryan Steven Cornejo Zavala (Equipo G01T - ACE941 / ACE404)
 
 Proporciona botones de comando para:
 1. Restablecer valores nominales de diseño.
@@ -8,6 +8,7 @@ Proporciona botones de comando para:
 3. Copia limpia del reporte matemático de 8 pasos al portapapeles del sistema.
 4. Apertura del reporte en el visor nativo (TextEdit en macOS / Bloc de notas en Windows).
 5. Visualización del diagrama esquemático en Vista Previa / Visor de Fotos.
+6. Apertura de la Tabla Comparativa (Teoría vs. Python vs. MATLAB vs. LTspice) y gráficos HD.
 """
 
 import sys
@@ -17,8 +18,8 @@ import tkinter as tk
 class PanelAcciones(tk.Frame):
     """
     Panel inferior con botones de acción para restablecer el circuito,
-    inducir la singularidad de prueba, copiar el reporte, abrir el visor nativo
-    y visualizar el diagrama esquemático.
+    inducir la singularidad de prueba, copiar el reporte, abrir el visor nativo,
+    visualizar el diagrama esquemático y abrir la tabla comparativa / gráficos HD.
     """
 
     def __init__(
@@ -29,6 +30,8 @@ class PanelAcciones(tk.Frame):
         on_copiar=None,
         on_abrir_visor=None,
         on_ver_diagrama=None,
+        on_ver_graficos=None,
+        on_ver_tabla=None,
         **kwargs,
     ):
         super().__init__(parent, **kwargs)
@@ -37,6 +40,8 @@ class PanelAcciones(tk.Frame):
         self.on_copiar = on_copiar
         self.on_abrir_visor = on_abrir_visor
         self.on_ver_diagrama = on_ver_diagrama
+        self.on_ver_graficos = on_ver_graficos
+        self.on_ver_tabla = on_ver_tabla
 
         self._construir_widgets()
 
@@ -107,7 +112,29 @@ class PanelAcciones(tk.Frame):
             command=self.on_ver_diagrama,
             pady=7,
         )
-        self.btn_diagrama.pack(fill="x")
+        self.btn_diagrama.pack(fill="x", pady=(0, 6))
+
+        # --- FILA 4: GRÁFICOS HD Y TABLA COMPARATIVA (BRYAN) ---
+        fila4 = tk.Frame(self)
+        fila4.pack(fill="x")
+
+        self.btn_graficos = tk.Button(
+            fila4,
+            text="📈 Abrir Gráficos HD",
+            font=("Helvetica", 10, "bold"),
+            command=self.on_ver_graficos,
+            pady=7,
+        )
+        self.btn_graficos.pack(side="left", fill="x", expand=True, padx=(0, 4))
+
+        self.btn_tabla = tk.Button(
+            fila4,
+            text="📊 Tabla Comparativa (% Error)",
+            font=("Helvetica", 10, "bold"),
+            command=self.on_ver_tabla,
+            pady=7,
+        )
+        self.btn_tabla.pack(side="left", fill="x", expand=True, padx=(4, 0))
 
     def _ejecutar_copia(self):
         if self.on_copiar:

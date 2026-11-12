@@ -5,7 +5,7 @@ Simulador de circuitos en corriente directa (análisis nodal y de mallas) desarr
 ## Equipo de Trabajo (G01T)
 * **Katherine Gissell García Sánchez:** Núcleo de cálculo y validaciones matemáticas (`modelo.py`).
 * **José Rolando Álvarez Mejía:** Arquitectura y desarrollo Frontend UI/UX (paquete modular `ui/`, `main.py`, `test_interfaz.py`).
-* **Bryan Steven Cornejo Zavala:** Visualización de datos y gráficos (`matplotlib`).
+* **Bryan Steven Cornejo Zavala:** Visualización de datos, gráficos en tiempo real con `matplotlib` y análisis comparativo Teoría vs. Python vs. MATLAB vs. LTspice (`ui/graficos.py`, `graficos.py`, `test_graficos.py`).
 * **Carlos Francisco Peña Herrera:** Módulos de exportación (CSV/PDF) y comparativas secundarias.
 * **Kevin Adonay Martinez Ceron:** Integración del sistema, testing y aseguramiento de calidad.
 
@@ -47,7 +47,8 @@ Simulador de circuitos en corriente directa (análisis nodal y de mallas) desarr
 4. **Ejecutar la suite de pruebas:**
    ```bash
    python test_modelo.py     # Pruebas del núcleo matemático (8 pruebas)
-   python test_interfaz.py   # Pruebas de integración UI/UX (6 pruebas)
+   python test_interfaz.py   # Pruebas de integración UI/UX (7 pruebas)
+   python test_graficos.py   # Pruebas de visualización y tabla comparativa (6 pruebas)
    ```
 
 ## Arquitectura del Frontend (`ui/`)
@@ -55,7 +56,8 @@ La interfaz de usuario sigue una arquitectura orientada a objetos modular:
 * **`ui/app.py`:** Orquestador principal (`SimuladorApp`) que inicializa la ventana y coordina el ciclo de cálculo reactivo.
 * **`ui/controles.py`:** Panel What-If con sliders continuos y botones de ajuste fino (◀ -1, +1 ▶) para $R_3$ y $k$.
 * **`ui/metricas.py`:** Tarjetas de datos en tiempo real para voltajes nodales ($V_A, V_B, V_C$), corriente de control ($i_\phi$), verificación por mallas y balance de potencias.
-* **`ui/acciones.py`:** Comandos rápidos para restablecer valores nominales, probar la singularidad del sistema y exportar el procedimiento al portapapeles o visor nativo.
+* **`ui/acciones.py`:** Comandos rápidos para restablecer valores nominales, probar la singularidad del sistema, exportar el procedimiento, abrir gráficos HD y consultar la tabla comparativa.
 * **`ui/esquema.py`:** Generador del diagrama esquemático del circuito en alta resolución con voltajes de nodo y parámetros en tiempo real para visualización nativa (Vista Previa / Visor de Fotos).
+* **`ui/graficos.py`:** Panel interactivo con gráficos de `matplotlib` embebidos en la aplicación (`FigureCanvasTkAgg`) para el balance de potencia y la curva $i_\phi$ vs $k$, además de la tabla comparativa Teoría vs. Python vs. MATLAB vs. LTspice con análisis de porcentaje de error ($\approx 0\,\%$).
 * **`ui/widgets.py`:** Control deslizante de alta visibilidad (`VisibleSlider`) implementado sobre `Canvas` para garantizar legibilidad en modo oscuro/claro en macOS y Windows.
 

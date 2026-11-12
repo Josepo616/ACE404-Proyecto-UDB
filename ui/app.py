@@ -1,9 +1,9 @@
 """
 ui/app.py - Orquestador principal de la aplicación gráfica Simulador DC (Fase 3).
-Autor: José Rolando Álvarez Mejía (Equipo G01T - ACE941 / ACE404)
+Autores: José Rolando Álvarez Mejía y Bryan Steven Cornejo Zavala (Equipo G01T - ACE941 / ACE404)
 
-Ensambla la ventana de escritorio, los paneles modulares de control, métricas y acciones,
-y coordina el enlace reactivo con el motor matemático (modelo.py).
+Ensambla la ventana de escritorio, los paneles modulares de control, métricas, acciones
+y gráficos Matplotlib en tiempo real, y coordina el enlace reactivo con el motor matemático (modelo.py).
 """
 
 import os
@@ -19,6 +19,11 @@ from ui.controles import PanelControles
 from ui.metricas import PanelMetricas
 from ui.acciones import PanelAcciones
 from ui.esquema import abrir_diagrama_en_visor
+from ui.graficos import (
+    PanelGraficos,
+    abrir_graficos_en_visor,
+    abrir_ventana_tabla_comparativa,
+)
 
 NOMINAL_R3 = 5.0
 NOMINAL_K = 8.0
@@ -28,7 +33,8 @@ K_SINGULAR = -56.0 / 5.5  # ≈ -10.1818 Ω
 class SimuladorApp:
     """
     Aplicación de escritorio para la simulación del circuito DC (Fase 3).
-    Coordina la ventana principal, los paneles de control, métricas y acciones.
+    Coordina la ventana principal, los paneles de control, métricas, acciones
+    y visualización gráfica con Matplotlib.
     """
 
     NOMINAL_R3 = NOMINAL_R3
@@ -44,8 +50,8 @@ class SimuladorApp:
             self._root_creada = False
 
         self.root.title("Simulador DC - Circuito con Fuente Dependiente (Fase 3)")
-        self.root.geometry("580x740")
-        self.root.minsize(520, 680)
+        self.root.geometry("1180x780")
+        self.root.minsize(1040, 700)
 
         self._construir_ui()
         self.actualizar_resumen()
@@ -54,9 +60,14 @@ class SimuladorApp:
         self.root.update()
 
     def _construir_ui(self):
-        # Contenedor centrado responsivo
-        self.card = tk.Frame(self.root, padx=22, pady=16)
-        self.card.place(relx=0.5, rely=0.5, anchor="center", width=530)
+        # Contenedor principal de dos columnas (Controles/Métricas a la izquierda, Gráficos a la derecha)
+        self.main_container = tk.Frame(self.root, padx=16, pady=12)
+        self.main_container.pack(fill="both", expand=True)
+
+        # Columna izquierda: tarjeta de controles, métricas y acciones
+        self.card = tk.Frame(self.main_container, padx=14, pady=8, width=520)
+        self.card.pack(side="left", fill="y", padx=(0, 12))
+        self.card.pack_propagate(False)
 
         # 1. Panel de controles (Sliders R3 y k)
         self.panel_controles = PanelControles(
@@ -71,7 +82,7 @@ class SimuladorApp:
         self.panel_metricas = PanelMetricas(self.card)
         self.panel_metricas.pack(fill="x")
 
-        # 3. Panel de acciones (Restablecer, Singularidad, Reporte, Diagrama)
+        # 3. Panel de acciones (Restablecer, Singularidad, Reporte, Diagrama, Gráficos y Tabla)
         self.panel_acciones = PanelAcciones(
             self.card,
             on_restablecer=self.restablecer,
@@ -79,8 +90,18 @@ class SimuladorApp:
             on_copiar=self.copiar_procedimiento,
             on_abrir_visor=self.abrir_en_visor,
             on_ver_diagrama=self.ver_diagrama,
+            on_ver_graficos=self.ver_graficos,
+            on_ver_tabla=self.ver_tabla_comparativa,
         )
         self.panel_acciones.pack(fill="x")
+
+        # 4. Columna derecha: Panel de gráficos Matplotlib en tiempo real (Bryan)
+        self.panel_graficos = PanelGraficos(
+            self.main_container,
+            r3_inicial=self.NOMINAL_R3,
+            k_inicial=self.NOMINAL_K,
+        )
+        self.panel_graficos.pack(side="left", fill="both", expand=True)
 
     def restablecer(self):
         """Restablece los valores nominales de diseño (R3=5Ω, k=8Ω)."""
@@ -134,8 +155,20 @@ class SimuladorApp:
             error=es_error,
         )
 
+    def ver_graficos(self):
+        """Genera los gráficos de barras y curva iϕ vs k en alta resolución y los abre en el visor del sistema."""
+        r3_raw, k_raw = self.panel_controles.obtener_valores()
+        r3_num = round(r3_raw, 1)
+        k_num = self.K_SINGULAR if abs(k_raw - self.K_SINGULAR) < 0.02 else round(k_raw, 1)
+        res = resolver_circuito(R3=r3_num, k=k_num)
+        abrir_graficos_en_visor(r3=r3_num, k=k_num, res=res)
+
+    def ver_tabla_comparativa(self):
+        """Abre la ventana con la tabla comparativa Teoría vs. Python vs. MATLAB vs. LTspice y el % de error."""
+        return abrir_ventana_tabla_comparativa(self.root)
+
     def actualizar_resumen(self):
-        """Calcula el circuito con modelo.py y actualiza todos los componentes de la interfaz."""
+        """Calcula el circuito con modelo.py y actualiza todos los componentes y gráficos de la interfaz."""
         r3_raw, k_raw = self.panel_controles.obtener_valores()
         r3_num = round(r3_raw, 1)
 
@@ -150,6 +183,8 @@ class SimuladorApp:
 
         res = resolver_circuito(R3=r3_num, k=k_num)
         self.panel_metricas.actualizar(res)
+        if hasattr(self, "panel_graficos"):
+            self.panel_graficos.actualizar(r3=r3_num, k=k_num, res=res)
 
     def ejecutar(self):
         """Inicia el bucle principal de la aplicación."""

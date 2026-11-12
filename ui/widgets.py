@@ -67,7 +67,10 @@ class VisibleSlider(tk.Canvas):
         self.create_oval(kx - 10, cy - 10, kx + 10, cy + 10, fill="#FFFFFF", outline="#007AFF", width=2)
 
     def _on_interaction(self, event):
-        self.val = self._x_to_val(event.x)
+        nuevo_val = self._x_to_val(event.x)
+        if nuevo_val == self.val:
+            return
+        self.val = nuevo_val
         self._draw()
         if self.command:
             self.command(self.val)

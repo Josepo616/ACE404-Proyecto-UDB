@@ -91,6 +91,20 @@ class TestInterfazSimulador(unittest.TestCase):
         self.assertTrue(os.path.exists(ruta), f"No se encontró el archivo generado en {ruta}")
         self.assertGreater(os.path.getsize(ruta), 1000, "El archivo de imagen generado está vacío")
 
+    def test_07_integracion_panel_graficos_y_tabla(self):
+        """Verifica que el panel de gráficos de Bryan esté conectado a la app y la ventana de tabla comparativa funcione."""
+        self.app.restablecer()
+        self.assertEqual(self.app.panel_graficos.r3_actual, 5.0)
+        self.assertEqual(self.app.panel_graficos.k_actual, 8.0)
+
+        self.app.panel_controles.modificar_r3(2.0)
+        self.assertAlmostEqual(self.app.panel_graficos.r3_actual, 7.0, places=1)
+        self.app.restablecer()
+
+        ventana_tabla = self.app.ver_tabla_comparativa()
+        self.assertIsNotNone(ventana_tabla)
+        ventana_tabla.destroy()
+
 
 if __name__ == "__main__":
     unittest.main()
