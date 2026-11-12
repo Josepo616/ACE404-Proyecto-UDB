@@ -6,7 +6,7 @@ Simulador de circuitos en corriente directa (análisis nodal y de mallas) desarr
 * **Katherine Gissell García Sánchez:** Núcleo de cálculo y validaciones matemáticas (`modelo.py`).
 * **José Rolando Álvarez Mejía:** Arquitectura y desarrollo Frontend UI/UX (paquete modular `ui/`, `main.py`, `test_interfaz.py`).
 * **Bryan Steven Cornejo Zavala:** Visualización de datos, gráficos en tiempo real con `matplotlib` y análisis comparativo Teoría vs. Python vs. MATLAB vs. LTspice (`ui/graficos.py`, `graficos.py`, `test_graficos.py`).
-* **Carlos Francisco Peña Herrera:** Módulos de exportación (CSV/PDF) y comparativas secundarias.
+* **Carlos Francisco Peña Herrera:** Módulos de exportación CSV/PDF (`exportar.py`, `test_exportar.py`) y verificación con LTspice y MATLAB/GNU Octave (`simulaciones/`).
 * **Kevin Adonay Martinez Ceron:** Integración del sistema, testing y aseguramiento de calidad.
 
 ## Funcionalidades Principales
@@ -17,7 +17,7 @@ Simulador de circuitos en corriente directa (análisis nodal y de mallas) desarr
 * **Procedimiento paso a paso:** Desglose completo de ecuaciones LCK, matrices $G$ y $R_m$, determinantes y solución con opción de copiado.
 * **Visualización de datos y gráficos:** Gráficos de barras para potencias y curvas paramétricas $i_\phi$ vs $k$.
 * **Detección y manejo de singularidad:** Identificación de matrices singulares (ej. $k \approx -10.1818\,\Omega$) y entradas no físicas.
-* **Exportación de resultados:** Generación de reportes tabulares y exportación directa a formato CSV.
+* **Exportación de resultados:** Tabla de resultados en CSV (compatible con Excel) y reporte PDF con datos, resultados, esquemático, gráficos, procedimiento paso a paso y tabla comparativa.
 
 ## Instalación y Ejecución
 
@@ -49,6 +49,7 @@ Simulador de circuitos en corriente directa (análisis nodal y de mallas) desarr
    python test_modelo.py     # Pruebas del núcleo matemático (8 pruebas)
    python test_interfaz.py   # Pruebas de integración UI/UX (7 pruebas)
    python test_graficos.py   # Pruebas de visualización y tabla comparativa (6 pruebas)
+   python test_exportar.py   # Pruebas de exportación CSV y PDF (8 pruebas)
    ```
 
 ## Arquitectura del Frontend (`ui/`)
